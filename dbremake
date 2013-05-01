@@ -1,0 +1,11 @@
+#!/bin/bash
+
+DBFILE=/home/yaksok/tmp/notestack.db
+
+echo "Schema..."
+
+sqlite3 $DBFILE < schema.sql
+
+echo "Populate..."
+
+sqlite3 $DBFILE < populate.sql

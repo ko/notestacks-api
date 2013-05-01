@@ -1,0 +1,2 @@
+#!/bin/bash
+tail ~/logs/user/error_notestacks_db.log
