@@ -34,6 +34,7 @@ def before_request():
 def teardown_request(exception):
     g.db.close()
 
+
 #
 # Helper functions
 #
@@ -57,7 +58,7 @@ def fetchall_to_json_list_multiple(rows, list_name, list_entry, count):
 def _notes_list_get(type, to_find = None):
     import json
     if type == 'single':
-        cur = g.db.execute('select title, body from note_table order by id desc')
+        cur = g.db.execute('select title, body from note_table order by id asc')
         list_entry = ['title', 'body']
         list_count = 2
     rows = cur.fetchall()
@@ -73,6 +74,13 @@ def notes_index():
     return 'sup'
 
 @app.route('/api/list/')
+#@crossdomain(origin='http://yaksok.net')
 def notes_list_get():
     return _notes_list_get('single')
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', 'http://yaksok.net')
+    response.headers.add('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+    return response
 
