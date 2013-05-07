@@ -90,7 +90,6 @@ def notes_index():
     return 'sup'
 
 @app.route('/api/list/get/')
-#@crossdomain(origin='http://yaksok.net')
 def notes_list_get():
     return _notes_list_get('single')
 
