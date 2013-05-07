@@ -5,6 +5,7 @@ from flask import Flask, request, session, g, redirect, \
 from contextlib import closing
 from config import app
 
+from flask.ext.login import LoginManager
 
 DATABASE = '/home/yaksok/tmp/notestack.db'
 DEBUG = False
@@ -18,6 +19,40 @@ app.config.from_object(__name__)
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 app.debug = True
 
+#
+# flask-login
+#
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(userid):
+    return User.user(userid)
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    form = LoginForm();
+    if form.validate_on_submit():
+        # login and validate the user
+        login_user(user)
+        flash("Logged in successfully!")
+        return redirect(request.args.get("next") or url_for("index"))
+    return render_template("login.html", form=form)
+
+@app.route("/test")
+@login_required
+def test():
+    pass
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return render_template("login.html")
+
+#
+# Database helpers
+#
 def connect_db():
     return sqlite3.connect(app.config['DATABASE'])
 
@@ -26,6 +61,9 @@ def init_db():
         db.cursor().executescript(f.read())
     db.commit()
 
+#
+# Request manipulation
+#
 @app.before_request
 def before_request():
     g.db = connect_db()
@@ -33,6 +71,12 @@ def before_request():
 @app.teardown_request
 def teardown_request(exception):
     g.db.close()
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', 'http://yaksok.net')
+    response.headers.add('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+    return response
 
 
 #
@@ -111,9 +155,4 @@ def notes_list_set():
         stackid = int(request.form['stackid'])
     return notes_list_get()
 
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', 'http://yaksok.net')
-    response.headers.add('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-    return response
 
